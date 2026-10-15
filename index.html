@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#c8322a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Study Plan">
+<title>Study Plan 学习计划</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&display=swap&text=%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92%E8%AF%BE%E7%A8%8B%E8%A1%A8%E5%91%A8%E4%B8%80%E4%BA%8C%E4%B8%89%E5%9B%9B%E4%BA%94%E5%85%AD%E6%97%A5%E7%8E%B0%E5%9C%A8%E5%8A%A0%E6%B2%B9%E6%B1%89%E5%AD%97%E8%A7%84%E5%88%99%E6%97%B6%E9%97%B4%E5%9B%BA%E5%AE%9A%E6%9C%9F%E9%99%90%E8%BF%9B%E6%AD%A5">
+<style>
+/* Layout: "Now" board, deadlines, day view with tabs (周一…周日), progress, fixed appointments, weekly timetable (课程表), rules */
+:root{
+  --bg:#f6f4f1; --paper:#ffffff; --ink:#1d1a19; --muted:#6b6461; --line:#e4dfda;
+  --red:#c8322a; --red-soft:#f8e3e0;
+  --nlp:#2f5fb3; --nlp-soft:#e3ebf8;
+  --ms:#1d7a68; --ms-soft:#dff1ec;
+  --bc:#a1660c; --bc-soft:#f6ead6;
+  --plan:#6c4fb0; --plan-soft:#ece6f7;
+  --rest:#8a8380; --rest-soft:#efece9;
+  --sp:#b03a7a; --sp-soft:#f7e1ee;
+  --vi:#5f7a12; --vi-soft:#edf2dc;
+  --f-ui:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --f-cjk:"Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141211; --paper:#1d1a19; --ink:#efe9e5; --muted:#a39b97; --line:#332e2c;
+  --red:#ff7a6e; --red-soft:#3f1f1c;
+  --nlp:#8db1ff; --nlp-soft:#1f2b43;
+  --ms:#6fd3bb; --ms-soft:#16322c;
+  --bc:#f0b45a; --bc-soft:#3a2b14;
+  --plan:#b9a2ff; --plan-soft:#2b2440;
+  --rest:#9b9491; --rest-soft:#272321;
+  --sp:#ff8cc6; --sp-soft:#3b1c2e;
+  --vi:#c3dd6a; --vi-soft:#2a3214;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141211; --paper:#1d1a19; --ink:#efe9e5; --muted:#a39b97; --line:#332e2c;
+  --red:#ff7a6e; --red-soft:#3f1f1c;
+  --nlp:#8db1ff; --nlp-soft:#1f2b43;
+  --ms:#6fd3bb; --ms-soft:#16322c;
+  --bc:#f0b45a; --bc-soft:#3a2b14;
+  --plan:#b9a2ff; --plan-soft:#2b2440;
+  --rest:#9b9491; --rest-soft:#272321;
+  --sp:#ff8cc6; --sp-soft:#3b1c2e;
+  --vi:#c3dd6a; --vi-soft:#2a3214;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5}
+[hidden]{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+header{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center}
+.seal{font-family:var(--f-cjk);font-weight:900;font-size:30px;line-height:1.05;color:var(--paper);background:var(--red);padding:10px 12px;border-radius:6px;writing-mode:vertical-rl;letter-spacing:.08em}
+h1{font-weight:800;font-size:clamp(26px,4.2vw,38px);line-height:1.1;margin:0;text-wrap:balance}
+.lede{margin:6px 0 0;color:var(--muted);max-width:62ch}
+h2{font-weight:800;font-size:18px;margin:0;display:flex;gap:10px;align-items:baseline}
+h2 .zh{font-family:var(--f-cjk);color:var(--red);font-size:20px}
+
+/* Jetzt */
+.now{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}
+.now .lbl{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.now .what{font-size:22px;font-weight:800;margin:2px 0}
+.now .det{color:var(--muted);margin:0}
+.now .clock{font-family:var(--f-mono);font-weight:700;font-size:34px;font-variant-numeric:tabular-nums;text-align:right}
+.now .left{font-family:var(--f-mono);font-size:13px;color:var(--muted);text-align:right}
+.pbar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:var(--red)}
+.next{grid-column:1/-1;font-size:13.5px;color:var(--muted)}
+.next b{color:var(--ink)}
+@media (max-width:520px){.now{grid-template-columns:minmax(0,1fr)}.now .clock,.now .left{text-align:left}}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.tab{flex:1 0 74px;display:grid;justify-items:center;gap:2px;padding:8px 6px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);cursor:pointer;font:600 13px var(--f-ui)}
+.tab .zh{font-family:var(--f-cjk);font-size:18px;font-weight:900}
+.tab .cnt{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tab[aria-selected="true"]{border-color:var(--red);box-shadow:inset 0 -3px 0 var(--red)}
+.tab.today .zh{color:var(--red)}
+.tab:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+/* Tagesliste */
+.day{display:grid;gap:14px}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.dayhead .sum{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.list{background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.slot{display:grid;grid-template-columns:96px 4px minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 16px;border-top:1px solid var(--line)}
+.slot:first-child{border-top:0}
+.slot .t{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.slot .bar{align-self:stretch;border-radius:2px;background:var(--c)}
+.slot .ti{font-weight:600}
+.slot .ti .tag{font-family:var(--f-mono);font-size:11px;font-weight:700;color:var(--c);background:var(--cs);padding:1px 6px;border-radius:4px;margin-right:6px;letter-spacing:.03em;white-space:nowrap}
+.slot .de{display:block;font-size:13.5px;color:var(--muted)}
+.slot.study{background:linear-gradient(90deg,var(--cs),transparent 55%)}
+.slot.live{outline:2px solid var(--red);outline-offset:-2px}
+.slot.done .ti,.slot.done .de{text-decoration:line-through;text-decoration-color:var(--muted);opacity:.6}
+.chk{width:22px;height:22px;accent-color:var(--red);cursor:pointer}
+@media (max-width:520px){.slot{grid-template-columns:4px minmax(0,1fr) auto;gap:10px}.slot .t{grid-column:2;grid-row:1;font-size:12px}.slot .bar{grid-row:1/3;grid-column:1}.slot .body{grid-column:2}.slot .chk{grid-column:3;grid-row:1/3}}
+
+/* 课程表 */
+.ttwrap{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:12.5px}
+th,td{border-bottom:1px solid var(--line);padding:6px;vertical-align:top}
+th{font-weight:600;color:var(--muted);text-align:left}
+thead th{font-size:13px;color:var(--ink)}
+thead th .zh{font-family:var(--f-cjk);font-weight:900;color:var(--red);margin-right:4px}
+tbody th{font-family:var(--f-mono);font-size:11.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+td .cell{background:var(--cs);color:var(--ink);border-left:3px solid var(--c);border-radius:4px;padding:4px 6px;line-height:1.3}
+td .cell b{display:block;color:var(--c);font-size:11px;font-family:var(--f-mono)}
+td.empty{color:var(--muted)}
+th.todaycol{box-shadow:inset 0 -2px 0 var(--red)}
+
+/* Stunden */
+.hours{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.hr{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:6px}
+.hr .top{display:flex;justify-content:space-between;align-items:baseline}
+.hr .top span:first-child{font-weight:600}
+.hr .top span:last-child{font-family:var(--f-mono);font-weight:700;color:var(--c);font-variant-numeric:tabular-nums}
+.hr .b{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.hr .b i{display:block;height:100%;background:var(--c)}
+.hr small{color:var(--muted);font-size:12.5px}
+.pstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.pst{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:2px}
+.pst .lbl{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pbig{font-weight:800;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.pst small{color:var(--muted);font-size:12.5px}
+.pweeks{display:flex;gap:8px;align-items:flex-end;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 14px 10px;overflow-x:auto}
+.pw{flex:1 0 44px;display:grid;gap:4px;justify-items:center;font-family:var(--f-mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pw .col{width:100%;max-width:40px;height:90px;background:var(--line);border-radius:4px;position:relative;overflow:hidden}
+.pw .col i{position:absolute;left:0;right:0;bottom:0;background:var(--red);border-radius:4px}
+.pw.cur{color:var(--ink);font-weight:700}
+@media (max-width:520px){.pstats{grid-template-columns:1fr 1fr}.pstats .pst:last-child{grid-column:1/-1}}
+
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:0;padding:0;list-style:none}
+.rules li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.rules b{display:block;margin-bottom:2px}
+.rules span{color:var(--muted);font-size:13.5px}
+.foot{font-size:13px;color:var(--muted);margin:0;max-width:72ch}
+.sync{margin:6px 0 0;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+
+.fxform{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px}
+.fxform label{display:grid;gap:4px;font-size:12.5px;color:var(--muted)}
+.fxform .wide{grid-column:1/-2}
+.fxform input,.fxform select{font:500 14px var(--f-ui);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 8px;min-width:0;width:100%;box-sizing:border-box}
+.fxform input:focus-visible,.fxform select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.addbtn{align-self:end;font:700 14px var(--f-ui);background:var(--red);color:var(--paper);border:0;border-radius:6px;padding:9px 12px;cursor:pointer}
+.addbtn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.err{grid-column:1/-1;margin:0;color:var(--red);font-size:13px}
+@media (max-width:560px){.fxform{grid-template-columns:1fr 1fr}.fxform .wide{grid-column:1/-1}.addbtn{grid-column:1/-1}}
+.fxlist{display:grid;gap:8px}
+.fxitem{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;padding:8px 12px}
+.fxitem .when{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fxitem button{font:600 13px var(--f-ui);background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:5px 9px;cursor:pointer}
+.fxitem button:focus-visible{outline:2px solid var(--red)}
+.fx{font-family:var(--f-mono);font-size:10.5px;font-weight:700;color:var(--paper);background:var(--ink);padding:1px 5px;border-radius:4px;margin-left:6px;vertical-align:1px}
+.c-other{--c:var(--muted);--cs:var(--rest-soft)}
+.c-sp{--c:var(--sp);--cs:var(--sp-soft)}
+.c-vi{--c:var(--vi);--cs:var(--vi-soft)}
+.dl{display:grid;gap:8px}
+.dli{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;padding:8px 12px}
+.dli .dt{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dli .nm{font-weight:600;min-width:0}
+.dli .nm small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.dli .left{font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--c);background:var(--cs);padding:3px 8px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dli.past{opacity:.5}
+@media (max-width:520px){.dli{grid-template-columns:minmax(0,1fr) auto}.dli .dt{grid-column:1/-1}}
+.c-zh{--c:var(--red);--cs:var(--red-soft)} .c-nlp{--c:var(--nlp);--cs:var(--nlp-soft)} .c-ms{--c:var(--ms);--cs:var(--ms-soft)}
+.c-bc{--c:var(--bc);--cs:var(--bc-soft)} .c-plan{--c:var(--plan);--cs:var(--plan-soft)} .c-rest{--c:var(--rest);--cs:var(--rest-soft)} .c-free{--c:var(--line);--cs:transparent}
+@media (prefers-reduced-motion:no-preference){.pbar i,.hr .b i{transition:width .3s ease}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="seal" aria-hidden="true">学习</div>
+    <div>
+      <h1>Study Plan 学习计划</h1>
+      <p class="lede">Fixed time blocks from 6:30 to 22:30 for the master seminar (DuckDB / C++), NLP, the blockchain seminar, English and Chinese. Tick off each block when it is done. The checkmarks reset every week.</p>
+      <p class="sync">Progress is saved on this device.</p>
+    </div>
+  </header>
+
+  <section class="now" aria-live="polite">
+    <div>
+      <div class="lbl">现在 · Right now</div>
+      <div class="what" id="nowWhat">–</div>
+      <p class="det" id="nowDet"></p>
+    </div>
+    <div>
+      <div class="clock" id="clock">--:--</div>
+      <div class="left" id="nowLeft"></div>
+    </div>
+    <div class="pbar"><i id="nowBar"></i></div>
+    <div class="next" id="nowNext"></div>
+  </section>
+
+  <section style="display:grid;gap:12px">
+    <h2><span class="zh">期限</span> Deadlines</h2>
+    <div class="dl" id="dl"></div>
+  </section>
+
+  <section class="day">
+    <div class="tabs" role="tablist" id="tabs" aria-label="Weekdays"></div>
+    <div class="dayhead"><h2 id="dayTitle"></h2><span class="sum" id="daySum"></span></div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <section style="display:grid;gap:12px">
+    <h2><span class="zh">进步</span> Progress</h2>
+    <div class="pstats">
+      <div class="pst"><span class="lbl">This week</span><span class="pbig" id="pWeek">–</span><small id="pWeekSub"></small></div>
+      <div class="pst"><span class="lbl">Since 16 Oct</span><span class="pbig" id="pAll">–</span><small id="pAllSub"></small></div>
+      <div class="pst"><span class="lbl">Streak</span><span class="pbig" id="pStreak">–</span><small>days in a row with at least 80 % done</small></div>
+    </div>
+    <div class="pweeks" id="pWeeks" aria-label="Completion per week"></div>
+    <div class="hours" id="hours"></div>
+  </section>
+
+  <section style="display:grid;gap:12px">
+    <h2><span class="zh">固定</span> Fixed appointments</h2>
+    <p class="foot">Add lectures, tutorials or seminar sessions here. The plan moves study blocks out of the way at these times automatically. Appointments are saved in this browser.</p>
+    <div class="fxlist" id="fxList"></div>
+    <form class="fxform" id="fxForm">
+      <label for="fxDay">Day<select id="fxDay"></select></label>
+      <label for="fxS">From<input type="time" id="fxS" value="14:15" step="300" required></label>
+      <label for="fxE">To<input type="time" id="fxE" value="15:45" step="300" required></label>
+      <label for="fxC">Subject<select id="fxC"><option value="nlp">NLP</option><option value="ms">Master seminar</option><option value="bc">Blockchain seminar</option><option value="zh">Chinese</option><option value="other">Other</option></select></label>
+      <label for="fxT" class="wide">Name<input type="text" id="fxT" placeholder="e.g. NLP tutorial"></label>
+      <button type="submit" class="addbtn">Add appointment</button>
+      <p class="err" id="fxErr" hidden></p>
+    </form>
+  </section>
+
+  <section style="display:grid;gap:12px">
+    <h2><span class="zh">课程表</span> Weekly timetable</h2>
+    <div class="ttwrap"><table id="tt"></table></div>
+  </section>
+
+
+  <section style="display:grid;gap:12px">
+    <h2><span class="zh">规则</span> Rules</h2>
+    <ul class="rules">
+      <li><b>Phone in another room</b><span>during every study block. Messages only during breaks.</span></li>
+      <li><b>Hardest task in the morning</b><span>Blocks 1 and 2 are for writing and problem solving, not for emails or formatting.</span></li>
+      <li><b>Anki every day, Sundays too</b><span>Never leave due cards. Add new words only once reviews are done.</span></li>
+      <li><b>Speak at 70 % speed</b><span>In every language. Pause instead of filling the gap, and know your next point before you start.</span></li>
+      <li><b>Unfinished work moves to Saturday</b><span>Don't catch up in the evening. Saturday morning is the buffer.</span></li>
+    </ul>
+  </section>
+
+  <p class="foot">Until the paper assignment on 6 November, the blockchain blocks go to DuckDB / C++ automatically. From 7 November they switch back to the blockchain seminar. Language priority: English and Chinese first, then German, then Vietnamese. 22:30 is bedtime so you get 8 hours of sleep. 加油!</p>
+</div>
+
+<script>
+(function(){
+  const CAT={
+    zh:{name:"Chinese",tag:"汉字"}, nlp:{name:"NLP",tag:"NLP"}, ms:{name:"Master seminar (DuckDB)",tag:"MS"},
+    bc:{name:"Blockchain seminar",tag:"BC"}, plan:{name:"Planning & buffer",tag:"PLAN"}, other:{name:"Appointment",tag:"APPT"}, sp:{name:"English & speaking",tag:"EN"}, vi:{name:"Vietnamese",tag:"VI"}, rest:{name:"Breaks & daily life",tag:""}, free:{name:"Free",tag:""}
+  };
+  const STUDY=["zh","nlp","ms","bc","plan","other","sp","vi"];
+  const S=(s,e,c,t,d)=>({s,e,c,t,d:d||""});
+
+  const ZH=[
+    ["Listening","HSK listening at your level, then shadowing: repeat aloud sentence by sentence"],
+    ["Reading","Graded reader or HSK reading texts, unknown words straight into Anki"],
+    ["Writing","Short diary entry in Chinese (5–8 sentences), characters by hand"],
+    ["Grammar","One chapter of the HSK Standard Course, exercises in writing"],
+    ["Speaking","Language partner, online tutor, or record yourself and listen back"]
+  ];
+  const SP=[
+    ["Speaking drill · English","Pick 3 points, talk 2 minutes about your weekend at 70 % speed, then tell it again"],
+    ["Speaking drill · English","Tell a story from your week: situation, problem, ending. Pause instead of \"um\""],
+    ["Speaking drill · English","Explain today's NLP lecture out loud as if to a friend, short sentences"],
+    ["Speaking drill · German","Retell a video or article you saw, then tell it a second time more slowly"],
+    ["Speaking drill · English","Present your seminar topic for 2 minutes using presentation phrases, record it"]
+  ];
+  const blk=(a,e,b)=>{const x=S(a,e,b[0],b[1],b[2]);if(b[3])x.pre={c:b[3][0],t:b[3][1],d:b[3][2]};return x;};
+  function weekday(b1,b2,b3,b4,z,sp){
+    z=z||ZH[0];sp=sp||SP[0];
+    return [
+      S("06:30","06:45","rest","Wake up","Drink water, open the window, 5 minutes of mobility"),
+      S("06:45","07:15","zh","Anki review","All due HSK cards, no new ones"),
+      S("07:15","07:45","rest","Breakfast"),
+      S("07:45","08:00","plan","Plan the day","Write down 3 concrete goals for today"),
+      blk("08:00","10:00",b1),
+      S("10:00","10:15","rest","Break","Stand up, leave the room"),
+      blk("10:15","12:15",b2),
+      S("12:15","13:00","rest","Lunch","Plus a short walk"),
+      S("13:00","13:15","sp",sp[0],sp[1]),
+      S("13:15","13:45","zh","New vocabulary","10 words from your current HSK level, write the characters by hand"),
+      blk("13:45","15:45",b3),
+      S("15:45","16:00","rest","Break"),
+      blk("16:00","17:30",b4),
+      S("17:30","18:30","rest","Exercise","Running, gym or cycling"),
+      S("18:30","19:30","rest","Dinner"),
+      S("19:30","20:45","zh",z[0],z[1]),
+      S("20:45","21:15","sp","English vocabulary","Review your English phrase deck in Anki, add 5 phrases from videos as full sentences"),
+      S("21:15","21:30","plan","Daily review","Update your mistake log, prepare tomorrow"),
+      S("21:30","22:00","free","Free time"),
+      S("22:00","22:30","rest","Wind down","No screens, asleep by 22:30")
+    ];
+  }
+  const DAYS=[
+    {zh:"周一",de:"Monday",slots:weekday(
+      ["nlp","Deepen Wednesday's lecture","Go through the slides, write your own summary"],
+      ["nlp","Exercise sheet","Solve the tasks yourself before looking at solutions"],
+      ["ms","DuckDB: docs & papers","Read the docs and papers related to your topic, take notes"],
+      ["bc","Read papers","Note key claims and open questions",["ms","DuckDB codebase","Read the source code around your topic, build and run DuckDB locally"]],ZH[0],SP[0])},
+    {zh:"周二",de:"Tuesday",slots:(()=>{
+      const b4=["bc","Paper draft","Turn notes into full text",["ms","C++ practice","Modern C++ used in DuckDB: smart pointers, templates, move semantics"]];
+      const w=weekday(
+      ["ms","DuckDB / C++ deep work","Implement your part in small steps, commit often"],
+      ["ms","DuckDB / C++ deep work","Continue, write down every problem you hit"],
+      ["nlp","Implementation","Rebuild methods from the lecture in Python"],
+      b4,ZH[1],SP[1]);
+      w.splice(12,2,blk("16:00","16:30",b4),S("16:30","17:00","rest","Get to volleyball"),S("17:00","18:30","rest","Volleyball","Replaces today's exercise block"));
+      return w;})()},
+    {zh:"周三",de:"Wednesday",slots:(()=>{const w=weekday(
+      ["bc","Write the paper","Target: finish one chapter"],
+      ["nlp","Lecture follow-up","Complete your notes right after the lecture, write down open questions"],
+      ["ms","DuckDB: write notes","Document what you built and why, this becomes your seminar text later"],
+      ["nlp","Deepen the lecture","Write a summary, put formulas on flashcards"],ZH[2],SP[2]);
+      w[4]=blk("08:00","09:45",["bc","Write the paper","Target: finish one chapter",["ms","DuckDB / C++","Implement or experiment, keep a log of what you tried"]]);
+      w[5]=S("09:45","10:15","rest","Commute to uni");
+      return w;})()},
+    {zh:"周四",de:"Thursday",slots:weekday(
+      ["ms","DuckDB / C++ deep work","Main implementation work"],
+      ["ms","Debugging & tests","Write tests, fix bugs, measure performance"],
+      ["bc","Presentation slides","Build slides, bullet-point speaker notes",["ms","DuckDB / C++","Continue implementation or reading code"]],
+      ["nlp","Exercise sheet","Second pass, hard problems"],ZH[3],SP[3])},
+    {zh:"周五",de:"Friday",slots:weekday(
+      ["nlp","Past exam","Real conditions: 120 minutes, no aids"],
+      ["nlp","Review mistakes","Understand and log every mistake from the past exam"],
+      ["ms","DuckDB: weekly progress","Wrap up, write a short progress note for your supervisor"],
+      ["plan","Week wrap-up","What is still open? Make a list for Saturday"],ZH[4],SP[4])},
+    {zh:"周六",de:"Saturday",slots:[
+      S("07:30","08:00","zh","Anki review","All due cards"),
+      S("08:00","10:00","plan","Catch-up block","Everything left over from the week"),
+      S("10:00","10:15","rest","Break"),
+      S("10:15","12:15","ms","DuckDB / C++","Whatever got stuck this week"),
+      S("12:15","13:30","rest","Lunch"),
+      S("13:30","15:30","zh","HSK mock test","One mock test at your level, then add mistakes to Anki"),
+      S("15:30","15:45","rest","Break"),
+      S("15:45","17:15","zh","Speaking & listening","Language partner or online tutor, or a Chinese series with Chinese subtitles"),
+      S("17:15","18:00","sp","English speaking","Language exchange, online tutor, or record a 5-minute talk and listen back"),
+      S("18:00","22:30","free","Free","Friends, sports, rest")
+    ]},
+    {zh:"周日",de:"Sunday",slots:[
+      S("09:00","09:30","zh","Anki review","Due cards only"),
+      S("09:30","10:30","zh","Relaxed Chinese","A series, podcast or music in Chinese, no pressure"),
+      S("10:30","11:00","vi","Vietnamese","A video, song or chat in Vietnamese, repeat useful sentences out loud"),
+      S("11:00","18:00","free","Rest day","No uni work"),
+      S("18:00","18:30","plan","Weekly planning","Set goals for the new week")
+    ]}
+  ];
+  const EVENTS=[
+    {date:"2026-10-22",s:"16:00",e:"17:30",c:"bc",t:"Blockchain seminar: kickoff",d:"Room 03 424 · end time assumed"},
+    {date:"2026-11-05",s:"16:00",e:"16:30",c:"bc",t:"Submit blockchain paper choices",d:"Deadline today"}
+  ];
+  const DEADLINES=[
+    {date:"2026-10-22",t:"Blockchain seminar kickoff",d:"16:00, room 03 424",c:"bc"},
+    {date:"2026-10-30",t:"DuckDB / C++ milestone",d:"Your own target for the master seminar",c:"ms"},
+    {date:"2026-11-05",t:"Submit blockchain paper choices",d:"",c:"bc"},
+    {date:"2026-11-06",t:"Blockchain paper assignment",d:"Blockchain blocks switch back on from 7 Nov",c:"bc"},
+    {date:"2027-02-01",t:"Blockchain presentation + 4-page paper",d:"February, exact date still open",c:"bc",approx:true}
+  ];
+  const PRE_BC=new Date(2026,10,7);
+
+  const toMin=t=>{const[h,m]=t.split(":").map(Number);return h*60+m;};
+  const dur=s=>toMin(s.e)-toMin(s.s);
+  const esc=x=>String(x).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const kOf=(di,s)=>di+"-"+s.s+"-"+s.t;
+  let fixed=[{id:"v1",day:2,s:"10:15",e:"11:45",t:"Lecture: Einführung in die Sprachverarbeitung",c:"nlp"}];
+  try{const f=JSON.parse(localStorage.getItem("wp-fixed")||"null");if(Array.isArray(f))fixed=f;}catch(e){}
+  const saveFixed=()=>{try{localStorage.setItem("wp-fixed",JSON.stringify(fixed))}catch(e){}};
+  const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const dateOf=di=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()-todayIdx()+di);};
+  function slotsFor(di){return slotsForDate(dateOf(di));}
+  function slotsForDate(date){
+    const di=(date.getDay()+6)%7;
+    const pre=date<PRE_BC;
+    let out=DAYS[di].slots.map(s=>(pre&&s.pre)?{...s,...s.pre}:{...s});
+    const overlays=[...fixed.filter(f=>f.day===di).map(f=>({...f,d:"Fixed appointment"})),...EVENTS.filter(ev=>ev.date===ymd(date))];
+    overlays.forEach(f=>{
+      const fs=toMin(f.s),fe=toMin(f.e);const next=[];
+      out.forEach(s=>{const a=toMin(s.s),b=toMin(s.e);
+        if(s.fixed||b<=fs||a>=fe){next.push(s);return;}
+        if(fs-a>=15)next.push({...s,e:f.s});
+        if(b-fe>=15)next.push({...s,s:f.e});
+      });
+      next.push({s:f.s,e:f.e,c:f.c,t:f.t,d:f.d,fixed:true});
+      out=next;
+    });
+    return out.sort((x,y)=>toMin(x.s)-toMin(y.s));
+  }
+  const todayIdx=()=>{const d=new Date().getDay();return (d+6)%7;};
+  function isoWeek(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const day=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-day);const y=new Date(Date.UTC(t.getUTCFullYear(),0,1));return t.getUTCFullYear()+"-"+Math.ceil(((t-y)/864e5+1)/7);}
+  const KEY="wp-"+isoWeek(new Date());
+  let done={};try{done=JSON.parse(localStorage.getItem(KEY)||"{}")||{};}catch(e){}
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(done));}catch(e){}};
+  let sel=todayIdx();
+  try{const s=sessionStorage.getItem("wp-tab");if(s!==null)sel=+s;}catch(e){}
+
+  const studyCount=di=>slotsFor(di).filter(s=>STUDY.includes(s.c)).length;
+  const doneCount=di=>slotsFor(di).filter(s=>STUDY.includes(s.c)&&done[kOf(di,s)]).length;
+
+  const tabs=document.getElementById("tabs");
+  function renderTabs(){
+    tabs.innerHTML="";
+    DAYS.forEach((d,i)=>{
+      const b=document.createElement("button");b.type="button";b.className="tab"+(i===todayIdx()?" today":"");b.id="tab-"+i;
+      b.setAttribute("role","tab");b.setAttribute("aria-selected",i===sel);
+      b.innerHTML=`<span class="zh">${d.zh}</span><span>${d.de.slice(0,2)}</span><span class="cnt">${doneCount(i)}/${studyCount(i)}</span>`;
+      b.onclick=()=>{sel=i;try{sessionStorage.setItem("wp-tab",i)}catch(e){};renderTabs();renderDay();};
+      tabs.append(b);
+    });
+  }
+
+  function renderDay(){
+    const d=DAYS[sel];
+    document.getElementById("dayTitle").innerHTML=`<span class="zh">${d.zh}</span> ${d.de}${sel===todayIdx()?" · today":""}`;
+    const slots=slotsFor(sel);
+    const studyMin=slots.filter(s=>STUDY.includes(s.c)).reduce((a,s)=>a+dur(s),0);
+    document.getElementById("daySum").textContent=`${(studyMin/60).toFixed(1)} h study time · ${doneCount(sel)} of ${studyCount(sel)} done`;
+    const list=document.getElementById("list");list.innerHTML="";
+    const nowM=new Date().getHours()*60+new Date().getMinutes();
+    slots.forEach((s,i)=>{
+      const row=document.createElement("div");
+      const study=STUDY.includes(s.c);
+      const live=sel===todayIdx()&&nowM>=toMin(s.s)&&nowM<toMin(s.e);
+      const k=kOf(sel,s);
+      row.className=`slot c-${s.c}${study?" study":""}${live?" live":""}${done[k]?" done":""}`;
+      const tag=CAT[s.c].tag?`<span class="tag">${CAT[s.c].tag}</span>`:"";
+      row.innerHTML=`<span class="t">${s.s}–${s.e}</span><span class="bar"></span><div class="body"><span class="ti">${tag}${esc(s.t)}${s.fixed?'<span class="fx">Fixed</span>':""}</span>${s.d?`<span class="de">${esc(s.d)}</span>`:""}</div>`;
+      if(study){
+        const c=document.createElement("input");c.type="checkbox";c.className="chk";c.id="chk-"+k;c.checked=!!done[k];
+        c.setAttribute("aria-label",`${s.t} done`);
+        c.onchange=()=>{if(c.checked)done[k]=1;else delete done[k];save();renderTabs();renderDay();renderHours();};
+        row.append(c);
+      }else row.append(document.createElement("span"));
+      list.append(row);
+    });
+  }
+
+  function renderNow(){
+    const now=new Date();const di=todayIdx();const m=now.getHours()*60+now.getMinutes();
+    document.getElementById("clock").textContent=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+    const slots=slotsFor(di);
+    const cur=slots.find(s=>m>=toMin(s.s)&&m<toMin(s.e));
+    const nxt=slots.find(s=>toMin(s.s)>m);
+    const W=document.getElementById("nowWhat"),D=document.getElementById("nowDet"),L=document.getElementById("nowLeft"),B=document.getElementById("nowBar"),N=document.getElementById("nowNext");
+    if(cur){
+      W.textContent=(CAT[cur.c].tag&&cur.c!=="plan"?CAT[cur.c].name+": ":"")+cur.t;
+      D.textContent=cur.d||"";
+      const left=toMin(cur.e)-m;L.textContent=`${left} min left until ${cur.e}`;
+      B.style.width=((m-toMin(cur.s))/dur(cur)*100).toFixed(1)+"%";
+    }else{
+      W.textContent=m<toMin(slots[0].s)?"Still sleeping time":"Day is over, go to sleep";
+      D.textContent=m<toMin(slots[0].s)?`The day starts at ${slots[0].s}.`:"Back at it tomorrow. 加油!";
+      L.textContent="";B.style.width="0%";
+    }
+    N.innerHTML=nxt?`Next: <b>${nxt.s} ${nxt.t}</b>`:"";
+  }
+
+  function renderTable(){
+    // Rows = every study time slot used on any day
+    const times=[...new Set(DAYS.flatMap((d,i)=>slotsFor(i).filter(s=>STUDY.includes(s.c)).map(s=>s.s+"–"+s.e)))].sort((a,b)=>toMin(a.slice(0,5))-toMin(b.slice(0,5)));
+    const td=todayIdx();
+    let h=`<thead><tr><th></th>${DAYS.map((d,i)=>`<th class="${i===td?"todaycol":""}"><span class="zh">${d.zh}</span>${d.de.slice(0,2)}</th>`).join("")}</tr></thead><tbody>`;
+    times.forEach(t=>{
+      h+=`<tr><th scope="row">${t}</th>`;
+      DAYS.forEach((d,di)=>{
+        const s=slotsFor(di).find(x=>STUDY.includes(x.c)&&x.s+"–"+x.e===t);
+        h+=s?`<td><div class="cell c-${s.c}"><b>${CAT[s.c].tag||CAT[s.c].name}</b>${esc(s.t)}</div></td>`:`<td class="empty"></td>`;
+      });
+      h+="</tr>";
+    });
+    document.getElementById("tt").innerHTML=h+"</tbody>";
+  }
+
+  const TRACK_START=new Date(2026,9,16);
+  const midnight=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+  const mondayOf=d=>addDays(d,-((d.getDay()+6)%7));
+  function weekDone(mon){
+    if(ymd(mon)===ymd(mondayOf(new Date())))return done;
+    try{return JSON.parse(localStorage.getItem("wp-"+isoWeek(mon))||"{}")||{};}catch(e){return {};}
+  }
+  function dayStats(d){
+    const di=(d.getDay()+6)%7,dn=weekDone(mondayOf(d));
+    let h=0,hd=0,n=0,k=0;const per={};
+    slotsForDate(d).forEach(s=>{if(!STUDY.includes(s.c))return;const m=dur(s);h+=m;n++;
+      per[s.c]=per[s.c]||{h:0,hd:0};per[s.c].h+=m;
+      if(dn[kOf(di,s)]){hd+=m;k++;per[s.c].hd+=m;}});
+    return {h,hd,n,k,per};
+  }
+  function rangeStats(a,b){
+    const r={h:0,hd:0,n:0,k:0,per:{}};
+    for(let d=a;d<=b;d=addDays(d,1)){if(d<TRACK_START)continue;const x=dayStats(d);
+      r.h+=x.h;r.hd+=x.hd;r.n+=x.n;r.k+=x.k;
+      for(const c in x.per){r.per[c]=r.per[c]||{h:0,hd:0};r.per[c].h+=x.per[c].h;r.per[c].hd+=x.per[c].hd;}}
+    return r;
+  }
+  const pct=r=>r.h?Math.round(r.hd/r.h*100):0;
+  const hrs=m=>(m/60).toFixed(1);
+  function renderHours(){
+    const today=midnight(new Date()),mon=mondayOf(today);
+    const wk=rangeStats(mon,today);
+    document.getElementById("pWeek").textContent=pct(wk)+" %";
+    document.getElementById("pWeekSub").textContent=`${hrs(wk.hd)} of ${hrs(wk.h)} h so far`;
+    const all=rangeStats(TRACK_START,today);
+    document.getElementById("pAll").textContent=pct(all)+" %";
+    document.getElementById("pAllSub").textContent=`${hrs(all.hd)} h studied`;
+    let streak=0,d=today;
+    const t=dayStats(today);if(!t.h||t.hd/t.h<0.8)d=addDays(today,-1);
+    while(d>=TRACK_START){const x=dayStats(d);if(!x.h||x.hd/x.h<0.8)break;streak++;d=addDays(d,-1);}
+    document.getElementById("pStreak").textContent=streak+(streak===1?" day":" days");
+    // last 8 weeks
+    let w=mondayOf(TRACK_START);const weeks=[];
+    while(w<=mon){weeks.push(w);w=addDays(w,7);}
+    document.getElementById("pWeeks").innerHTML=weeks.slice(-8).map(m=>{
+      const r=rangeStats(m,m<mon?addDays(m,6):today),p=pct(r);
+      return `<div class="pw${+m===+mon?" cur":""}" title="Week of ${m.toLocaleDateString("en-GB",{day:"numeric",month:"short"})}: ${p} %"><span>${p}%</span><span class="col"><i style="height:${p}%"></i></span><span>${m.toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</span></div>`;
+    }).join("");
+    // this week per subject: done vs planned (whole week)
+    const full=rangeStats(mon,addDays(mon,6));
+    const order=["ms","nlp","bc","zh","sp","vi","plan"];
+    document.getElementById("hours").innerHTML=order.filter(c=>full.per[c]).map(c=>{
+      const x=full.per[c];const p=x.h?x.hd/x.h*100:0;
+      return `<div class="hr c-${c}"><div class="top"><span>${CAT[c].name}</span><span>${hrs(x.hd)} / ${hrs(x.h)} h</span></div><div class="b"><i style="width:${p.toFixed(1)}%"></i></div></div>`;
+    }).join("");
+  }
+
+  function renderFixed(){
+    const L=document.getElementById("fxList");
+    const sorted=[...fixed].sort((a,b)=>a.day-b.day||toMin(a.s)-toMin(b.s));
+    L.innerHTML=sorted.length?"":'<p class="foot">No fixed appointments yet.</p>';
+    sorted.forEach(f=>{
+      const it=document.createElement("div");it.className="fxitem c-"+f.c;
+      it.innerHTML=`<span class="when">${DAYS[f.day].de.slice(0,2)} ${f.s}–${f.e}</span><span>${esc(f.t)}</span>`;
+      const b=document.createElement("button");b.type="button";b.textContent="Remove";b.setAttribute("aria-label","Remove "+f.t);
+      b.onclick=()=>{fixed=fixed.filter(x=>x.id!==f.id);saveFixed();renderAll();};
+      it.append(b);L.append(it);
+    });
+  }
+  function renderDeadlines(){
+    const n=new Date();const today=new Date(n.getFullYear(),n.getMonth(),n.getDate());
+    document.getElementById("dl").innerHTML=DEADLINES.map(x=>{
+      const [y,m,d]=x.date.split("-").map(Number);const dt=new Date(y,m-1,d);
+      const days=Math.round((dt-today)/864e5);
+      const lbl=x.approx?"Feb 2027":dt.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});
+      const left=days<0?"done":days===0?"today":days===1?"tomorrow":(x.approx?"~":"")+days+" days";
+      return `<div class="dli c-${x.c}${days<0?" past":""}"><span class="dt">${lbl}</span><span class="nm">${esc(x.t)}${x.d?`<small>${esc(x.d)}</small>`:""}</span><span class="left">${left}</span></div>`;
+    }).join("");
+  }
+  function renderAll(){renderTabs();renderDay();renderNow();renderTable();renderHours();renderFixed();renderDeadlines();}
+  const fxDay=document.getElementById("fxDay");
+  fxDay.innerHTML=DAYS.map((d,i)=>`<option value="${i}">${d.de}</option>`).join("");
+  fxDay.value=String(todayIdx());
+  document.getElementById("fxForm").addEventListener("submit",ev=>{
+    ev.preventDefault();
+    const s=document.getElementById("fxS").value,e=document.getElementById("fxE").value;
+    const t=document.getElementById("fxT").value.trim(),c=document.getElementById("fxC").value;
+    const err=document.getElementById("fxErr");
+    if(!s||!e||toMin(e)<=toMin(s)){err.textContent="The end time must be after the start time.";err.hidden=false;return;}
+    if(!t){err.textContent="Give the appointment a name, e.g. NLP tutorial.";err.hidden=false;return;}
+    err.hidden=true;
+    fixed.push({id:"f"+Date.now(),day:+fxDay.value,s,e,t,c});saveFixed();
+    document.getElementById("fxT").value="";
+    sel=+fxDay.value;renderAll();
+  });
+  renderAll();
+  setInterval(()=>{renderNow();if(sel===todayIdx())renderDay();},30000);
+})();
+</script>
+</body>
+</html>
